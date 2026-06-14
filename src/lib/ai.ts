@@ -1,6 +1,6 @@
-import * as SecureStore from 'expo-secure-store';
+import { getItem, setItem, removeItem } from './secureStore';
 
-// AI 配置存在设备安全存储（Keychain / Keystore），不进数据库。
+// AI 配置存在设备安全存储（手机 Keychain/Keystore，web localStorage），不进数据库。
 export interface AiConfig {
   provider: 'deepseek' | 'openai';
   apiKey: string;
@@ -16,7 +16,7 @@ export const PROVIDERS = {
 } as const;
 
 export async function loadAiConfig(): Promise<AiConfig | null> {
-  const raw = await SecureStore.getItemAsync(KEY);
+  const raw = await getItem(KEY);
   if (!raw) return null;
   try {
     return JSON.parse(raw) as AiConfig;
@@ -26,11 +26,11 @@ export async function loadAiConfig(): Promise<AiConfig | null> {
 }
 
 export async function saveAiConfig(cfg: AiConfig): Promise<void> {
-  await SecureStore.setItemAsync(KEY, JSON.stringify(cfg));
+  await setItem(KEY, JSON.stringify(cfg));
 }
 
 export async function clearAiConfig(): Promise<void> {
-  await SecureStore.deleteItemAsync(KEY);
+  await removeItem(KEY);
 }
 
 interface Msg {
