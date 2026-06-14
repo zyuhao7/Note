@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, SectionList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { listEntries, today } from '../db/queries';
 import { EntryWithCategory } from '../db/schema';
@@ -22,6 +23,7 @@ function groupByDay(entries: EntryWithCategory[]): Section[] {
 
 export default function HomeScreen({ navigation }: any) {
   const [sections, setSections] = useState<Section[]>([]);
+  const insets = useSafeAreaInsets(); // 这页没有原生 header，自己避开状态栏
 
   const reload = useCallback(() => {
     setSections(groupByDay(listEntries()));
@@ -31,7 +33,7 @@ export default function HomeScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.title}>我的记录</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Export')}>
           <Text style={styles.headerBtn}>导出 ↗</Text>

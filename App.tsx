@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -69,24 +70,26 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      <Tab.Navigator
-        screenOptions={{
-          ...headerOpts,
-          tabBarActiveTintColor: '#3b82f6',
-          tabBarInactiveTintColor: '#999',
-        }}
-      >
-        <Tab.Screen
-          name="记录"
-          component={RecordStack}
-          options={{ headerShown: false, tabBarIcon: tabIcon('📝') }}
-        />
-        <Tab.Screen name="趋势" component={TrendScreen} options={{ tabBarIcon: tabIcon('📊') }} />
-        <Tab.Screen name="分析" component={AnalyzeScreen} options={{ title: 'AI 分析', tabBarIcon: tabIcon('✨') }} />
-        <Tab.Screen name="设置" component={SettingsScreen} options={{ tabBarIcon: tabIcon('⚙️') }} />
-      </Tab.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <StatusBar style="dark" />
+        <Tab.Navigator
+          screenOptions={{
+            ...headerOpts,
+            tabBarActiveTintColor: '#3b82f6',
+            tabBarInactiveTintColor: '#999',
+          }}
+        >
+          <Tab.Screen
+            name="记录"
+            component={RecordStack}
+            options={{ headerShown: false, tabBarIcon: tabIcon('📝') }}
+          />
+          <Tab.Screen name="趋势" component={TrendScreen} options={{ tabBarIcon: tabIcon('📊') }} />
+          <Tab.Screen name="分析" component={AnalyzeScreen} options={{ title: 'AI 分析', tabBarIcon: tabIcon('✨') }} />
+          <Tab.Screen name="设置" component={SettingsScreen} options={{ tabBarIcon: tabIcon('⚙️') }} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

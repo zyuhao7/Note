@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { listEntriesForExport } from '../db/queries';
 import { toMarkdown } from '../lib/exporter';
 import { loadAiConfig, chat, AiConfig } from '../lib/ai';
@@ -24,9 +25,12 @@ export default function AnalyzeScreen({ navigation }: any) {
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadAiConfig().then(setCfg);
-  }, []);
+  // 每次切到本页都重新读配置，这样在「设置」存完 Key 回来能立刻拿到。
+  useFocusEffect(
+    useCallback(() => {
+      loadAiConfig().then(setCfg);
+    }, [])
+  );
 
   async function run() {
     if (!cfg) return;
