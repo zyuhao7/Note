@@ -17,7 +17,7 @@ export interface Entry {
   day: string; // YYYY-MM-DD，记录归属的日期
   value: string; // 统一存字符串，按 kind 解释
   note: string;
-  createdAt: number; // epoch ms，写入时刻，用于软锁判断
+  createdAt: number; // epoch ms，写入时刻，用于同日记录排序
 }
 
 // 列表查询用：记录 join 上类别信息
