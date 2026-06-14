@@ -8,6 +8,11 @@
 2. **快捷记录 + 当日锁定** — 点右下角 `+`，选预设类别（基金 / 地铁 / 早饭 / 晚饭）只填一个值即可，免手打；新记录只能归属当天，旧记录只读（软锁防手滑）。
 3. **可自定义类别** — 每个类别带类型（金额 / 数字 / 评分 / 文字），输入与展示更贴合。
 
+## 进阶功能
+
+- **趋势图** — 「趋势」标签按类别 + 时间范围（近7/30天）画折线，显示合计与记录数，纯 SVG 自绘。
+- **App 内直连 AI** — 「设置」填入 DeepSeek / OpenAI 的 API Key（存设备安全存储，不上传），「分析」标签一键让 AI 直接读最近30天记录给建议。
+
 ## 运行
 
 需要 **Node ≥ 20.19**（本机已用 nvm 装好 Node 20）：
@@ -32,6 +37,14 @@ src/screens/
   HomeScreen.tsx         记录列表 + 悬浮 + 按钮 + 日期分组软锁
   EntryScreen.tsx        类别选择 + 填值
   ExportScreen.tsx       导出预览 + 复制 / 分享
+  TrendScreen.tsx        趋势折线图
+  AnalyzeScreen.tsx      AI 一键分析
+  SettingsScreen.tsx     AI 服务 / API Key 配置
+src/components/
+  LineChart.tsx          纯 SVG 折线图
+src/lib/
+  exporter.ts            导出成 Markdown / JSON
+  ai.ts                  AI 配置存储 + Chat Completions 调用
 docs/requirements.md     原始需求
 ```
 
