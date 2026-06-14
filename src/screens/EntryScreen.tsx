@@ -170,8 +170,10 @@ const styles = StyleSheet.create({
   chipTextActive: { color: '#3b82f6', fontWeight: '600' },
   form: { marginTop: 24 },
   input: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16,
-    fontSize: 16, marginBottom: 12, borderWidth: 1, borderColor: '#eee',
+    backgroundColor: '#fff', borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 12, minHeight: 52,
+    fontSize: 16, lineHeight: 22, textAlignVertical: 'center',
+    marginBottom: 12, borderWidth: 1, borderColor: '#eee',
   },
   saveBtn: {
     backgroundColor: '#3b82f6', borderRadius: 12, padding: 16,

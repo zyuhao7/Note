@@ -118,8 +118,10 @@ const styles = StyleSheet.create({
   segText: { color: '#666', fontSize: 14 },
   segTextActive: { color: '#3b82f6', fontWeight: '600' },
   input: {
-    backgroundColor: '#fff', borderRadius: 12, padding: 16,
-    fontSize: 16, borderWidth: 1, borderColor: '#eee',
+    backgroundColor: '#fff', borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 12, minHeight: 52,
+    fontSize: 16, lineHeight: 22, textAlignVertical: 'center',
+    borderWidth: 1, borderColor: '#eee',
   },
   saveBtn: {
     backgroundColor: '#3b82f6', borderRadius: 12, padding: 16,
