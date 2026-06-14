@@ -78,8 +78,13 @@ export function addEntry(categoryId: number, day: string, value: string, note: s
   return res.lastInsertRowId;
 }
 
-export function updateEntry(id: number, value: string, note: string): void {
-  getDb().runSync('UPDATE entries SET value = ?, note = ? WHERE id = ?', [value, note, id]);
+export function updateEntry(
+  id: number, categoryId: number, day: string, value: string, note: string
+): void {
+  getDb().runSync(
+    'UPDATE entries SET categoryId = ?, day = ?, value = ?, note = ? WHERE id = ?',
+    [categoryId, day, value, note, id]
+  );
 }
 
 export function deleteEntry(id: number): void {

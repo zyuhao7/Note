@@ -73,10 +73,14 @@ export function addEntry(categoryId: number, day: string, value: string, note: s
   return id;
 }
 
-export function updateEntry(id: number, value: string, note: string): void {
+export function updateEntry(
+  id: number, categoryId: number, day: string, value: string, note: string
+): void {
   const s = read();
   const e = s.entries.find((x) => x.id === id);
   if (e) {
+    e.categoryId = categoryId;
+    e.day = day;
     e.value = value;
     e.note = note;
     writeEnts(s.entries);

@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { listEntries, today } from '../db/queries';
 import { EntryWithCategory } from '../db/schema';
 
-type Section = { title: string; day: string; locked: boolean; data: EntryWithCategory[] };
+type Section = { title: string; day: string; data: EntryWithCategory[] };
 
 function groupByDay(entries: EntryWithCategory[]): Section[] {
   const t = today();
@@ -16,7 +16,6 @@ function groupByDay(entries: EntryWithCategory[]): Section[] {
   return Array.from(map.entries()).map(([day, data]) => ({
     day,
     data,
-    locked: day !== t, // 软锁：非今天的记录只读
     title: day === t ? `今天 ${day}` : day,
   }));
 }
@@ -48,13 +47,12 @@ export default function HomeScreen({ navigation }: any) {
         }
         renderSectionHeader={({ section }) => (
           <Text style={styles.sectionHeader}>
-            📅 {section.title} {section.locked ? '🔒' : ''}
+            📅 {section.title}
           </Text>
         )}
-        renderItem={({ item, section }) => (
+        renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.row}
-            disabled={section.locked}
             onPress={() =>
               navigation.navigate('Entry', { mode: 'edit', entryId: item.id })
             }

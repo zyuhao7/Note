@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert,
+  View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   listCategories, addEntry, updateEntry, deleteEntry, today, listEntries,
 } from '../db/queries';
 import { Category } from '../db/schema';
+
+// YYYY-MM-DD 字符串 ↔ Date 互转（按本地时区）。
+function dayToDate(day: string): Date {
+  const [y, m, d] = day.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+function dateToDay(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
 export default function EntryScreen({ navigation, route }: any) {
   const mode: 'new' | 'edit' = route.params?.mode ?? 'new';
@@ -15,6 +28,8 @@ export default function EntryScreen({ navigation, route }: any) {
   const [selected, setSelected] = useState<Category | null>(null);
   const [value, setValue] = useState('');
   const [note, setNote] = useState('');
+  const [day, setDay] = useState<string>(today()); // 记录归属日期，默认今天，可改
+  const [showPicker, setShowPicker] = useState(false);
 
   useEffect(() => {
     const cats = listCategories();
@@ -25,6 +40,7 @@ export default function EntryScreen({ navigation, route }: any) {
         setSelected(cats.find((c) => c.id === e.categoryId) ?? null);
         setValue(e.value);
         setNote(e.note);
+        setDay(e.day);
       }
     }
   }, [mode, entryId]);
@@ -39,14 +55,16 @@ export default function EntryScreen({ navigation, route }: any) {
     }
   })();
 
+  // 把 YYYY-MM-DD 显示成更友好的形式，今天特别标注。
+  const dayLabel = day === today() ? `今天 ${day}` : day;
+
   function save() {
     if (!selected) { Alert.alert('请先选择一个类别'); return; }
     if (!value.trim()) { Alert.alert('请填写值'); return; }
     if (mode === 'edit' && entryId != null) {
-      updateEntry(entryId, value.trim(), note.trim());
+      updateEntry(entryId, selected.id, day, value.trim(), note.trim());
     } else {
-      // 当日锁定：新记录只能归属今天，杜绝补填旧账
-      addEntry(selected.id, today(), value.trim(), note.trim());
+      addEntry(selected.id, day, value.trim(), note.trim());
     }
     navigation.goBack();
   }
@@ -61,6 +79,25 @@ export default function EntryScreen({ navigation, route }: any) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.label}>日期</Text>
+      <TouchableOpacity style={styles.dateBtn} onPress={() => setShowPicker(true)}>
+        <Text style={styles.dateText}>📅 {dayLabel}</Text>
+        <Text style={styles.dateHint}>点击修改</Text>
+      </TouchableOpacity>
+      {showPicker && (
+        <DateTimePicker
+          value={dayToDate(day)}
+          mode="date"
+          maximumDate={new Date()}
+          onChange={(event, picked) => {
+            // Android 选完即关；iOS 内联展示，确认后由用户关闭。
+            if (Platform.OS !== 'ios') setShowPicker(false);
+            if (event.type === 'dismissed') { setShowPicker(false); return; }
+            if (picked) setDay(dateToDay(picked));
+          }}
+        />
+      )}
+
       <Text style={styles.label}>选择类别</Text>
       <View style={styles.grid}>
         {categories.map((c) => (
@@ -68,7 +105,6 @@ export default function EntryScreen({ navigation, route }: any) {
             key={c.id}
             style={[styles.chip, selected?.id === c.id && styles.chipActive]}
             onPress={() => setSelected(c)}
-            disabled={mode === 'edit'}
           >
             <Text style={styles.chipIcon}>{c.icon}</Text>
             <Text style={[styles.chipText, selected?.id === c.id && styles.chipTextActive]}>
@@ -97,7 +133,7 @@ export default function EntryScreen({ navigation, route }: any) {
           />
           <TouchableOpacity style={styles.saveBtn} onPress={save}>
             <Text style={styles.saveText}>
-              {mode === 'edit' ? '保存修改' : `保存今天 ${today().slice(5)}`}
+              {mode === 'edit' ? '保存修改' : '保存'}
             </Text>
           </TouchableOpacity>
           {mode === 'edit' && (
@@ -115,6 +151,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fafafa' },
   content: { padding: 20 },
   label: { fontSize: 15, fontWeight: '600', color: '#444', marginBottom: 12, marginTop: 8 },
+  dateBtn: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 8,
+    borderWidth: 1, borderColor: '#eee',
+  },
+  dateText: { fontSize: 16, color: '#1a1a1a', fontWeight: '600' },
+  dateHint: { fontSize: 13, color: '#3b82f6' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   chip: {
     width: 88, height: 88, borderRadius: 16, backgroundColor: '#fff',
