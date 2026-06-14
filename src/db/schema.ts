@@ -1,7 +1,5 @@
-import * as SQLite from 'expo-sqlite';
-
-// 本地优先存储：所有记录存在设备本地 SQLite。
-// 记录 = 日期 + 类别 + 类型 + 值 + 备注 + 时间戳。
+// 纯类型与常量，无副作用、跨平台共享。
+// 实际存储实现见 queries.native.ts（SQLite）与 queries.web.ts（localStorage）。
 
 export type CategoryKind = 'money' | 'number' | 'rating' | 'text';
 
@@ -29,54 +27,32 @@ export interface EntryWithCategory extends Entry {
   categoryKind: CategoryKind;
 }
 
-let _db: SQLite.SQLiteDatabase | null = null;
-
-export function getDb(): SQLite.SQLiteDatabase {
-  if (!_db) {
-    _db = SQLite.openDatabaseSync('note.db');
-  }
-  return _db;
+// 趋势聚合：按天汇总某类别的数值
+export interface DayPoint {
+  day: string;
+  total: number;
+  count: number;
 }
 
 // 预设类别，对应需求里的「基金、地铁、早饭、晚饭」。
-const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
+export const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: '基金', icon: '📈', kind: 'rating', sortOrder: 0 },
   { name: '地铁', icon: '🚇', kind: 'money', sortOrder: 1 },
   { name: '早饭', icon: '🍚', kind: 'money', sortOrder: 2 },
   { name: '晚饭', icon: '🍜', kind: 'money', sortOrder: 3 },
 ];
 
-export function initDb(): void {
-  const db = getDb();
-  db.execSync(`
-    PRAGMA journal_mode = WAL;
-    CREATE TABLE IF NOT EXISTS categories (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      icon TEXT NOT NULL DEFAULT '📝',
-      kind TEXT NOT NULL DEFAULT 'text',
-      sortOrder INTEGER NOT NULL DEFAULT 0
-    );
-    CREATE TABLE IF NOT EXISTS entries (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      categoryId INTEGER NOT NULL,
-      day TEXT NOT NULL,
-      value TEXT NOT NULL DEFAULT '',
-      note TEXT NOT NULL DEFAULT '',
-      createdAt INTEGER NOT NULL,
-      FOREIGN KEY (categoryId) REFERENCES categories(id)
-    );
-    CREATE INDEX IF NOT EXISTS idx_entries_day ON entries(day);
-  `);
+// 本地日期（不依赖时区偏移），返回 YYYY-MM-DD。
+export function today(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
 
-  // 首次启动播种默认类别
-  const row = db.getFirstSync<{ c: number }>('SELECT COUNT(*) AS c FROM categories');
-  if (row && row.c === 0) {
-    for (const cat of DEFAULT_CATEGORIES) {
-      db.runSync(
-        'INSERT INTO categories (name, icon, kind, sortOrder) VALUES (?, ?, ?, ?)',
-        [cat.name, cat.icon, cat.kind, cat.sortOrder]
-      );
-    }
-  }
+// 把存储的值解析成数值，用于聚合（去掉 ¥ 和 %）。
+export function parseNumeric(value: string): number {
+  const n = parseFloat(value.replace(/[¥%,\s]/g, ''));
+  return Number.isFinite(n) ? n : 0;
 }

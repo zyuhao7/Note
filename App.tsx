@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
-import { initDb } from './src/db/schema';
+import { initDb } from './src/db/queries';
 import HomeScreen from './src/screens/HomeScreen';
 import EntryScreen from './src/screens/EntryScreen';
 import ExportScreen from './src/screens/ExportScreen';
@@ -41,11 +41,24 @@ function tabIcon(emoji: string) {
 
 export default function App() {
   const [ready, setReady] = useState(false);
+  const [err, setErr] = useState<string>('');
 
   useEffect(() => {
-    initDb();
-    setReady(true);
+    try {
+      initDb();
+      setReady(true);
+    } catch (e: any) {
+      setErr(e?.message ?? String(e));
+    }
   }, []);
+
+  if (err !== '') {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
+        <Text style={{ color: '#ef4444', fontSize: 15, lineHeight: 22 }}>启动失败：{err}</Text>
+      </View>
+    );
+  }
 
   if (!ready) {
     return (
